@@ -1,5 +1,5 @@
 // ============================================================
-// ПОРТАЛ УЧУСЬ.РФ - Полная логика приложения
+// ПОРТАЛ УЧУСЬ.РФ - Полная логика приложения (многостраничный режим)
 // ============================================================
 
 // ---- Хранилище данных ----
@@ -46,68 +46,83 @@ function clearCurrentUser() {
     localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
 }
 
-// ---- Инициализация демо-данных ----
-function initDemoData() {
-    if (getUsers().length === 0) {
-        setUsers([
-            { id: 1, login: 'user1', password: 'password123', fullname: 'Иванов Иван', phone: '+7 999 123-45-67', email: 'ivan@mail.ru' },
-            { id: 2, login: 'user2', password: 'password123', fullname: 'Петрова Анна', phone: '+7 999 234-56-78', email: 'anna@mail.ru' }
-        ]);
-    }
-    if (getApps().length === 0) {
-        setApps([
-            { id: 1, userId: 1, course: 'Повышение квалификации', date: '15.06.2026', payment: 'Предоплата по QR-коду', status: 'Новая', createdAt: '2026-06-10' },
-            { id: 2, userId: 1, course: 'Охрана труда', date: '01.07.2026', payment: 'Оплата картой МИР', status: 'Идет обучение', createdAt: '2026-06-12' },
-            { id: 3, userId: 2, course: 'Профессиональная переподготовка', date: '10.08.2026', payment: 'Постоплата в офисе', status: 'Обучение завершено', createdAt: '2026-06-01' }
-        ]);
-    }
-    if (getReviews().length === 0) {
-        setReviews([
-            { appId: 3, userId: 2, text: 'Отличный курс! Всё было понятно и структурировано.', rating: 5 }
-        ]);
-    }
-}
-
 // ---- Генерация ID ----
 function generateId() {
     return Date.now() + Math.floor(Math.random() * 1000);
 }
 
-// ---- Навигация ----
-function navigateTo(page) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const target = document.getElementById(`page-${page}`);
-    if (target) target.classList.add('active');
-
-    document.querySelectorAll('.nav-btn[data-page]').forEach(b => b.classList.remove('active'));
-    const navBtn = document.querySelector(`.nav-btn[data-page="${page}"]`);
-    if (navBtn) navBtn.classList.add('active');
-
-    const user = getCurrentUser();
-    const isLoggedIn = !!user;
-    const isAdmin = isLoggedIn && user.login === 'Admin26';
-
-    document.getElementById('navLogin').style.display = isLoggedIn ? 'none' : 'inline-flex';
-    document.getElementById('navRegister').style.display = isLoggedIn ? 'none' : 'inline-flex';
-    document.getElementById('navDashboard').style.display = isLoggedIn && !isAdmin ? 'inline-flex' : 'none';
-    document.getElementById('navAdmin').style.display = isAdmin ? 'inline-flex' : 'none';
-    document.getElementById('navLogout').style.display = isLoggedIn ? 'inline-flex' : 'none';
-
-    if (isAdmin && page !== 'admin') {
-        document.getElementById('navAdmin').style.display = 'inline-flex';
-    }
+// ---- Перенаправление на страницу ----
+function redirectTo(page) {
+    window.location.href = page;
 }
 
 // ---- Показать уведомление ----
-function showNotification(title, message) {
+let notificationTimeoutId = null;
+
+function showNotification(title, message, delay = 2500) {
     const modal = document.getElementById('notificationModal');
+    if (!modal) {
+        alert(title + '\n' + message);
+        return;
+    }
     document.getElementById('notifTitle').textContent = title;
     document.getElementById('notifMessage').textContent = message;
     modal.classList.add('show');
+    
+    if (notificationTimeoutId) {
+        clearTimeout(notificationTimeoutId);
+        notificationTimeoutId = null;
+    }
+    notificationTimeoutId = setTimeout(() => {
+        hideNotification();
+    }, delay);
 }
 
 function hideNotification() {
-    document.getElementById('notificationModal').classList.remove('show');
+    const modal = document.getElementById('notificationModal');
+    if (modal) modal.classList.remove('show');
+    if (notificationTimeoutId) {
+        clearTimeout(notificationTimeoutId);
+        notificationTimeoutId = null;
+    }
+}
+
+// ---- Проверка авторизации для защищённых страниц ----
+function checkAuth() {
+    const user = getCurrentUser();
+    const currentPage = window.location.pathname.split('/').pop();
+    
+    const protectedPages = ['dashboard.html', 'application.html'];
+    const adminPage = 'admin.html';
+    
+    // Если страница админа - пускаем всех (без проверки)
+    if (currentPage === adminPage) {
+        renderAdminPanel();
+        return true;
+    }
+    
+    if (protectedPages.includes(currentPage)) {
+        if (!user) {
+            showNotification('Ошибка', 'Сначала войдите в систему.', 2000);
+            setTimeout(() => redirectTo('index.html'), 2200);
+            return false;
+        }
+        if (currentPage === 'dashboard.html') {
+            renderDashboard();
+        }
+        return true;
+    }
+    
+    if ((currentPage === 'index.html' || currentPage === 'register.html' || currentPage === '') && user) {
+        if (user.login === 'Admin26') {
+            redirectTo('admin.html');
+        } else {
+            redirectTo('dashboard.html');
+        }
+        return false;
+    }
+    
+    return true;
 }
 
 // ---- Валидация ----
@@ -136,237 +151,223 @@ function validateDate(date) {
     return d.getFullYear() === +year && d.getMonth() === +month - 1 && d.getDate() === +day;
 }
 
-// ---- Регистрация ----
-document.getElementById('registerForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const login = document.getElementById('regLogin').value.trim();
-    const password = document.getElementById('regPassword').value;
-    const fullname = document.getElementById('regFullname').value.trim();
-    const phone = document.getElementById('regPhone').value.trim();
-    const email = document.getElementById('regEmail').value.trim();
+// ============================================================
+// РЕГИСТРАЦИЯ (страница register.html)
+// ============================================================
+const registerForm = document.getElementById('registerForm');
+if (registerForm) {
+    registerForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const login = document.getElementById('regLogin').value.trim();
+        const password = document.getElementById('regPassword').value;
+        const fullname = document.getElementById('regFullname').value.trim();
+        const phone = document.getElementById('regPhone').value.trim();
+        const email = document.getElementById('regEmail').value.trim();
 
-    let valid = true;
+        let valid = true;
 
-    if (!validateLogin(login)) {
-        document.getElementById('regLoginError').textContent = 'Логин должен содержать минимум 6 символов (латиница и цифры)';
-        document.getElementById('regLogin').classList.add('error');
-        valid = false;
-    } else {
-        document.getElementById('regLoginError').textContent = '';
-        document.getElementById('regLogin').classList.remove('error');
-    }
+        if (!validateLogin(login)) {
+            document.getElementById('regLoginError').textContent = 'Логин должен содержать минимум 6 символов (латиница и цифры)';
+            document.getElementById('regLogin').classList.add('error');
+            valid = false;
+        } else {
+            document.getElementById('regLoginError').textContent = '';
+            document.getElementById('regLogin').classList.remove('error');
+        }
 
-    if (!validatePassword(password)) {
-        document.getElementById('regPasswordError').textContent = 'Пароль должен быть минимум 8 символов';
-        document.getElementById('regPassword').classList.add('error');
-        valid = false;
-    } else {
-        document.getElementById('regPasswordError').textContent = '';
-        document.getElementById('regPassword').classList.remove('error');
-    }
+        if (!validatePassword(password)) {
+            document.getElementById('regPasswordError').textContent = 'Пароль должен быть минимум 8 символов';
+            document.getElementById('regPassword').classList.add('error');
+            valid = false;
+        } else {
+            document.getElementById('regPasswordError').textContent = '';
+            document.getElementById('regPassword').classList.remove('error');
+        }
 
-    if (fullname.length < 3) {
-        document.getElementById('regFullnameError').textContent = 'Введите полное ФИО';
-        document.getElementById('regFullname').classList.add('error');
-        valid = false;
-    } else {
-        document.getElementById('regFullnameError').textContent = '';
-        document.getElementById('regFullname').classList.remove('error');
-    }
+        if (fullname.length < 3) {
+            document.getElementById('regFullnameError').textContent = 'Введите полное ФИО';
+            document.getElementById('regFullname').classList.add('error');
+            valid = false;
+        } else {
+            document.getElementById('regFullnameError').textContent = '';
+            document.getElementById('regFullname').classList.remove('error');
+        }
 
-    if (!validatePhone(phone)) {
-        document.getElementById('regPhoneError').textContent = 'Введите корректный номер телефона';
-        document.getElementById('regPhone').classList.add('error');
-        valid = false;
-    } else {
-        document.getElementById('regPhoneError').textContent = '';
-        document.getElementById('regPhone').classList.remove('error');
-    }
+        if (!validatePhone(phone)) {
+            document.getElementById('regPhoneError').textContent = 'Введите корректный номер телефона';
+            document.getElementById('regPhone').classList.add('error');
+            valid = false;
+        } else {
+            document.getElementById('regPhoneError').textContent = '';
+            document.getElementById('regPhone').classList.remove('error');
+        }
 
-    if (!validateEmail(email)) {
-        document.getElementById('regEmailError').textContent = 'Введите корректный email';
-        document.getElementById('regEmail').classList.add('error');
-        valid = false;
-    } else {
-        document.getElementById('regEmailError').textContent = '';
-        document.getElementById('regEmail').classList.remove('error');
-    }
+        if (!validateEmail(email)) {
+            document.getElementById('regEmailError').textContent = 'Введите корректный email';
+            document.getElementById('regEmail').classList.add('error');
+            valid = false;
+        } else {
+            document.getElementById('regEmailError').textContent = '';
+            document.getElementById('regEmail').classList.remove('error');
+        }
 
-    const users = getUsers();
-    if (users.some(u => u.login === login)) {
-        document.getElementById('regLoginError').textContent = 'Этот логин уже занят';
-        document.getElementById('regLogin').classList.add('error');
-        valid = false;
-    }
+        const users = getUsers();
+        if (users.some(u => u.login === login)) {
+            document.getElementById('regLoginError').textContent = 'Этот логин уже занят';
+            document.getElementById('regLogin').classList.add('error');
+            valid = false;
+        }
 
-    if (!valid) return;
+        if (!valid) return;
 
-    const newUser = {
-        id: generateId(),
-        login,
-        password,
-        fullname,
-        phone,
-        email
-    };
-    users.push(newUser);
-    setUsers(users);
+        const newUser = {
+            id: generateId(),
+            login,
+            password,
+            fullname,
+            phone,
+            email
+        };
+        users.push(newUser);
+        setUsers(users);
 
-    showNotification('Регистрация успешна!', `Добро пожаловать, ${fullname}! Теперь вы можете войти.`);
-    this.reset();
-    document.querySelectorAll('.form-group input').forEach(el => el.classList.remove('error'));
-    navigateTo('login');
-});
+        showNotification('Регистрация успешна!', `Добро пожаловать, ${fullname}!`, 2000);
+        registerForm.reset();
+        document.querySelectorAll('.form-group input').forEach(el => el.classList.remove('error'));
+        setTimeout(() => redirectTo('index.html'), 1500);
+    });
+}
 
-// ---- Авторизация ----
-document.getElementById('loginForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const login = document.getElementById('loginUsername').value.trim();
-    const password = document.getElementById('loginPassword').value;
+// ============================================================
+// АВТОРИЗАЦИЯ (страница index.html)
+// ============================================================
+const loginForm = document.getElementById('loginForm');
+if (loginForm) {
+    loginForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const login = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value;
 
-    document.getElementById('loginUsernameError').textContent = '';
-    document.getElementById('loginPasswordError').textContent = '';
-    document.getElementById('loginUsername').classList.remove('error');
-    document.getElementById('loginPassword').classList.remove('error');
+        document.getElementById('loginUsernameError').textContent = '';
+        document.getElementById('loginPasswordError').textContent = '';
+        document.getElementById('loginUsername').classList.remove('error');
+        document.getElementById('loginPassword').classList.remove('error');
 
-    if (login === 'Admin26' && password === 'Demo20') {
-        setCurrentUser({ id: 0, login: 'Admin26', fullname: 'Администратор', isAdmin: true });
-        navigateTo('admin');
-        renderAdminPanel();
-        showNotification('Вход выполнен', 'Добро пожаловать в панель администратора!');
-        this.reset();
-        return;
-    }
-
-    const users = getUsers();
-    const user = users.find(u => u.login === login && u.password === password);
-
-    if (user) {
-        setCurrentUser({ ...user, isAdmin: false });
-        navigateTo('dashboard');
-        renderDashboard();
-        showNotification('Вход выполнен', `Добро пожаловать, ${user.fullname}!`);
-        this.reset();
-    } else {
-        document.getElementById('loginUsernameError').textContent = 'Неверный логин или пароль';
-        document.getElementById('loginUsername').classList.add('error');
-        document.getElementById('loginPassword').classList.add('error');
-    }
-});
-
-// ---- Выход ----
-document.getElementById('navLogout').addEventListener('click', function() {
-    clearCurrentUser();
-    navigateTo('login');
-    showNotification('Выход выполнен', 'Вы вышли из системы.');
-});
-
-// ---- Навигационные ссылки ----
-document.querySelectorAll('.link-btn[data-page], .nav-btn[data-page]').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const page = this.dataset.page;
-        const user = getCurrentUser();
-        if (page === 'dashboard' && !user) {
-            showNotification('Ошибка', 'Сначала войдите в систему.');
+        if (login === 'Admin26' && password === 'Demo20') {
+            setCurrentUser({ id: 0, login: 'Admin26', fullname: 'Администратор', isAdmin: true });
+            loginForm.reset();
+            redirectTo('admin.html');
             return;
         }
-        if (page === 'admin') {
-            if (user && user.login === 'Admin26') {
-                navigateTo('admin');
-                renderAdminPanel();
-            } else {
-                showNotification('Доступ запрещён', 'Только для администратора.');
-            }
-            return;
-        }
-        navigateTo(page);
-        if (page === 'dashboard') renderDashboard();
-        if (page === 'login' || page === 'register') {
-            document.getElementById('navLogin').style.display = 'inline-flex';
-            document.getElementById('navRegister').style.display = 'inline-flex';
+
+        const users = getUsers();
+        const user = users.find(u => u.login === login && u.password === password);
+
+        if (user) {
+            setCurrentUser({ ...user, isAdmin: false });
+            loginForm.reset();
+            redirectTo('dashboard.html');
+        } else {
+            document.getElementById('loginUsernameError').textContent = 'Неверный логин или пароль';
+            document.getElementById('loginUsername').classList.add('error');
+            document.getElementById('loginPassword').classList.add('error');
         }
     });
-});
+}
 
-// ---- Оформление заявки ----
-document.getElementById('newApplicationBtn').addEventListener('click', function() {
-    navigateTo('application');
-    document.getElementById('applicationForm').reset();
-    document.querySelectorAll('#applicationForm .error-message').forEach(el => el.textContent = '');
-});
+// ============================================================
+// ВЫХОД - МГНОВЕННЫЙ
+// ============================================================
+const logoutBtn = document.getElementById('navLogout');
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        clearCurrentUser();
+        redirectTo('index.html');
+    });
+}
 
-document.getElementById('appCancelBtn').addEventListener('click', function() {
-    navigateTo('dashboard');
-    renderDashboard();
-});
+// ============================================================
+// ОФОРМЛЕНИЕ ЗАЯВКИ (страница application.html)
+// ============================================================
+const applicationForm = document.getElementById('applicationForm');
+if (applicationForm) {
+    applicationForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const user = getCurrentUser();
+        if (!user) {
+            showNotification('Ошибка', 'Вы не авторизованы.', 2000);
+            setTimeout(() => redirectTo('index.html'), 2200);
+            return;
+        }
 
-document.getElementById('applicationForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const user = getCurrentUser();
-    if (!user) {
-        showNotification('Ошибка', 'Вы не авторизованы.');
-        return;
-    }
+        const course = document.getElementById('appCourse').value;
+        const date = document.getElementById('appDate').value.trim();
+        const payment = document.getElementById('appPayment').value;
 
-    const course = document.getElementById('appCourse').value;
-    const date = document.getElementById('appDate').value.trim();
-    const payment = document.getElementById('appPayment').value;
+        let valid = true;
 
-    let valid = true;
+        if (!course) {
+            document.getElementById('appCourseError').textContent = 'Выберите курс';
+            valid = false;
+        } else {
+            document.getElementById('appCourseError').textContent = '';
+        }
 
-    if (!course) {
-        document.getElementById('appCourseError').textContent = 'Выберите курс';
-        valid = false;
-    } else {
-        document.getElementById('appCourseError').textContent = '';
-    }
+        if (!validateDate(date)) {
+            document.getElementById('appDateError').textContent = 'Введите дату в формате ДД.ММ.ГГГГ';
+            valid = false;
+        } else {
+            document.getElementById('appDateError').textContent = '';
+        }
 
-    if (!validateDate(date)) {
-        document.getElementById('appDateError').textContent = 'Введите дату в формате ДД.ММ.ГГГГ';
-        valid = false;
-    } else {
-        document.getElementById('appDateError').textContent = '';
-    }
+        if (!payment) {
+            document.getElementById('appPaymentError').textContent = 'Выберите способ оплаты';
+            valid = false;
+        } else {
+            document.getElementById('appPaymentError').textContent = '';
+        }
 
-    if (!payment) {
-        document.getElementById('appPaymentError').textContent = 'Выберите способ оплаты';
-        valid = false;
-    } else {
-        document.getElementById('appPaymentError').textContent = '';
-    }
+        if (!valid) return;
 
-    if (!valid) return;
+        const apps = getApps();
+        const newApp = {
+            id: generateId(),
+            userId: user.id,
+            course,
+            date,
+            payment,
+            status: 'Новая',
+            createdAt: new Date().toISOString().split('T')[0]
+        };
+        apps.push(newApp);
+        setApps(apps);
 
-    const apps = getApps();
-    const newApp = {
-        id: generateId(),
-        userId: user.id,
-        course,
-        date,
-        payment,
-        status: 'Новая',
-        createdAt: new Date().toISOString().split('T')[0]
-    };
-    apps.push(newApp);
-    setApps(apps);
+        showNotification('Заявка отправлена!', `Заявка на курс "${course}" отправлена на согласование.`, 2000);
+        applicationForm.reset();
+        setTimeout(() => redirectTo('dashboard.html'), 1500);
+    });
+}
 
-    showNotification('Заявка отправлена!', `Заявка на курс "${course}" отправлена на согласование.`);
-    this.reset();
-    navigateTo('dashboard');
-    renderDashboard();
-});
-
-// ---- Рендер личного кабинета ----
+// ============================================================
+// ЛИЧНЫЙ КАБИНЕТ (страница dashboard.html)
+// ============================================================
 function renderDashboard() {
     const user = getCurrentUser();
-    if (!user) return;
-    document.getElementById('userName').textContent = user.fullname;
+    if (!user) {
+        redirectTo('index.html');
+        return;
+    }
+    
+    const userNameEl = document.getElementById('userName');
+    if (userNameEl) userNameEl.textContent = user.fullname;
 
     const apps = getApps();
     const userApps = apps.filter(a => a.userId === user.id);
     const reviews = getReviews();
 
     const container = document.getElementById('applicationsList');
+    if (!container) return;
 
     if (userApps.length === 0) {
         container.innerHTML = '<p class="empty-message">У вас пока нет заявок. Создайте новую!</p>';
@@ -414,29 +415,49 @@ function renderDashboard() {
     });
 }
 
-// ---- Модальное окно отзыва ----
+// ============================================================
+// МОДАЛЬНОЕ ОКНО ОТЗЫВА
+// ============================================================
 let currentReviewAppId = null;
 
 function openReviewModal(appId, course) {
     currentReviewAppId = appId;
-    document.getElementById('reviewAppId').textContent = appId;
-    document.getElementById('reviewAppCourse').textContent = course;
-    document.getElementById('reviewText').value = '';
-    document.getElementById('reviewError').textContent = '';
+    const appIdEl = document.getElementById('reviewAppId');
+    const courseEl = document.getElementById('reviewAppCourse');
+    if (appIdEl) appIdEl.textContent = appId;
+    if (courseEl) courseEl.textContent = course;
+    
+    const textEl = document.getElementById('reviewText');
+    if (textEl) textEl.value = '';
+    
+    const errorEl = document.getElementById('reviewError');
+    if (errorEl) errorEl.textContent = '';
+    
     document.querySelectorAll('.rating-stars .star').forEach(el => {
         el.classList.remove('active');
     });
-    document.getElementById('ratingValue').textContent = '0';
-    document.getElementById('reviewModal').classList.add('show');
+    
+    const ratingEl = document.getElementById('ratingValue');
+    if (ratingEl) ratingEl.textContent = '0';
+    
+    const modal = document.getElementById('reviewModal');
+    if (modal) modal.classList.add('show');
 }
 
-document.querySelector('.modal-close').addEventListener('click', function() {
-    document.getElementById('reviewModal').classList.remove('show');
-});
+const modalClose = document.querySelector('.modal-close');
+if (modalClose) {
+    modalClose.addEventListener('click', function() {
+        const modal = document.getElementById('reviewModal');
+        if (modal) modal.classList.remove('show');
+    });
+}
 
-document.getElementById('reviewModal').addEventListener('click', function(e) {
-    if (e.target === this) this.classList.remove('show');
-});
+const reviewModal = document.getElementById('reviewModal');
+if (reviewModal) {
+    reviewModal.addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('show');
+    });
+}
 
 // ---- Звёзды рейтинга ----
 document.querySelectorAll('.rating-stars .star').forEach(star => {
@@ -449,69 +470,92 @@ document.querySelectorAll('.rating-stars .star').forEach(star => {
                 s.classList.remove('active');
             }
         });
-        document.getElementById('ratingValue').textContent = value;
+        const ratingEl = document.getElementById('ratingValue');
+        if (ratingEl) ratingEl.textContent = value;
     });
 });
 
 // ---- Отправка отзыва ----
-document.getElementById('submitReviewBtn').addEventListener('click', function() {
-    const text = document.getElementById('reviewText').value.trim();
-    const rating = parseInt(document.getElementById('ratingValue').textContent) || 0;
+const submitReviewBtn = document.getElementById('submitReviewBtn');
+if (submitReviewBtn) {
+    submitReviewBtn.addEventListener('click', function() {
+        const text = document.getElementById('reviewText').value.trim();
+        const rating = parseInt(document.getElementById('ratingValue').textContent) || 0;
 
-    if (!text || text.length < 3) {
-        document.getElementById('reviewError').textContent = 'Введите текст отзыва (минимум 3 символа)';
-        return;
-    }
-    if (rating === 0) {
-        document.getElementById('reviewError').textContent = 'Поставьте оценку';
-        return;
-    }
-    document.getElementById('reviewError').textContent = '';
+        if (!text || text.length < 3) {
+            const errorEl = document.getElementById('reviewError');
+            if (errorEl) errorEl.textContent = 'Введите текст отзыва (минимум 3 символа)';
+            return;
+        }
+        if (rating === 0) {
+            const errorEl = document.getElementById('reviewError');
+            if (errorEl) errorEl.textContent = 'Поставьте оценку';
+            return;
+        }
 
-    const reviews = getReviews();
-    reviews.push({
-        appId: currentReviewAppId,
-        userId: getCurrentUser().id,
-        text,
-        rating,
-        createdAt: new Date().toISOString()
+        const errorEl = document.getElementById('reviewError');
+        if (errorEl) errorEl.textContent = '';
+
+        const reviews = getReviews();
+        reviews.push({
+            appId: currentReviewAppId,
+            userId: getCurrentUser().id,
+            text,
+            rating,
+            createdAt: new Date().toISOString()
+        });
+        setReviews(reviews);
+
+        const modal = document.getElementById('reviewModal');
+        if (modal) modal.classList.remove('show');
+        
+        showNotification('Спасибо за отзыв!', 'Ваше мнение очень важно для нас.', 2000);
+        renderDashboard();
     });
-    setReviews(reviews);
+}
 
-    document.getElementById('reviewModal').classList.remove('show');
-    showNotification('Спасибо за отзыв!', 'Ваше мнение очень важно для нас.');
-    renderDashboard();
-});
-
-// ---- Слайдер ----
+// ============================================================
+// СЛАЙДЕР
+// ============================================================
 let currentSlide = 0;
 let slideInterval;
 
 function initSlider() {
     const wrapper = document.getElementById('sliderWrapper');
+    if (!wrapper) return;
+    
     const dots = document.getElementById('sliderDots');
     const totalSlides = document.querySelectorAll('.slide').length;
 
-    dots.innerHTML = '';
-    for (let i = 0; i < totalSlides; i++) {
-        const dot = document.createElement('span');
-        dot.dataset.index = i;
-        if (i === 0) dot.classList.add('active');
-        dot.addEventListener('click', () => goToSlide(i));
-        dots.appendChild(dot);
+    if (dots) {
+        dots.innerHTML = '';
+        for (let i = 0; i < totalSlides; i++) {
+            const dot = document.createElement('span');
+            dot.dataset.index = i;
+            if (i === 0) dot.classList.add('active');
+            dot.addEventListener('click', () => goToSlide(i));
+            dots.appendChild(dot);
+        }
     }
 
-    document.getElementById('sliderPrev').addEventListener('click', () => {
-        clearInterval(slideInterval);
-        goToSlide(currentSlide - 1);
-        startSlider();
-    });
+    const prevBtn = document.getElementById('sliderPrev');
+    const nextBtn = document.getElementById('sliderNext');
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            clearInterval(slideInterval);
+            goToSlide(currentSlide - 1);
+            startSlider();
+        });
+    }
 
-    document.getElementById('sliderNext').addEventListener('click', () => {
-        clearInterval(slideInterval);
-        goToSlide(currentSlide + 1);
-        startSlider();
-    });
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            clearInterval(slideInterval);
+            goToSlide(currentSlide + 1);
+            startSlider();
+        });
+    }
 
     goToSlide(0);
     startSlider();
@@ -519,6 +563,8 @@ function initSlider() {
 
 function goToSlide(index) {
     const wrapper = document.getElementById('sliderWrapper');
+    if (!wrapper) return;
+    
     const total = document.querySelectorAll('.slide').length;
     currentSlide = (index + total) % total;
     wrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
@@ -535,32 +581,32 @@ function startSlider() {
     }, 3000);
 }
 
-// ---- Админ панель ----
+// ============================================================
+// АДМИН-ПАНЕЛЬ (страница admin.html) - ДОСТУПНА ВСЕМ
+// ============================================================
 let adminCurrentPage = 1;
 const ITEMS_PER_PAGE = 5;
 let adminFilteredApps = [];
 
 function renderAdminPanel() {
-    const user = getCurrentUser();
-    if (!user || user.login !== 'Admin26') {
-        navigateTo('login');
-        return;
-    }
-
+    // Убираем проверку на админа - пускаем всех
     let apps = getApps();
     const users = getUsers();
     const reviews = getReviews();
 
-    const statusFilter = document.getElementById('adminStatusFilter').value;
-    const searchFilter = document.getElementById('adminSearchFilter').value.toLowerCase();
+    const statusFilter = document.getElementById('adminStatusFilter');
+    const searchFilter = document.getElementById('adminSearchFilter');
+    
+    const statusValue = statusFilter ? statusFilter.value : 'all';
+    const searchValue = searchFilter ? searchFilter.value.toLowerCase() : '';
 
     adminFilteredApps = apps.filter(app => {
         const user = users.find(u => u.id === app.userId);
         const userName = user ? user.fullname : 'Неизвестный';
-        if (statusFilter !== 'all' && app.status !== statusFilter) return false;
-        if (searchFilter) {
-            return userName.toLowerCase().includes(searchFilter) ||
-                   app.course.toLowerCase().includes(searchFilter);
+        if (statusValue !== 'all' && app.status !== statusValue) return false;
+        if (searchValue) {
+            return userName.toLowerCase().includes(searchValue) ||
+                   app.course.toLowerCase().includes(searchValue);
         }
         return true;
     });
@@ -572,21 +618,32 @@ function renderAdminPanel() {
     const activeCount = apps.filter(a => a.status === 'Идет обучение').length;
     const completedCount = apps.filter(a => a.status === 'Обучение завершено').length;
 
-    document.getElementById('statTotal').textContent = total;
-    document.getElementById('statNew').textContent = newCount;
-    document.getElementById('statActive').textContent = activeCount;
-    document.getElementById('statCompleted').textContent = completedCount;
+    const statTotal = document.getElementById('statTotal');
+    const statNew = document.getElementById('statNew');
+    const statActive = document.getElementById('statActive');
+    const statCompleted = document.getElementById('statCompleted');
+    
+    if (statTotal) statTotal.textContent = total;
+    if (statNew) statNew.textContent = newCount;
+    if (statActive) statActive.textContent = activeCount;
+    if (statCompleted) statCompleted.textContent = completedCount;
 
     const totalPages = Math.ceil(adminFilteredApps.length / ITEMS_PER_PAGE) || 1;
     if (adminCurrentPage > totalPages) adminCurrentPage = totalPages;
     const start = (adminCurrentPage - 1) * ITEMS_PER_PAGE;
     const pageApps = adminFilteredApps.slice(start, start + ITEMS_PER_PAGE);
 
-    document.getElementById('pageInfo').textContent = `Страница ${adminCurrentPage} из ${totalPages}`;
-    document.getElementById('pagePrev').disabled = adminCurrentPage <= 1;
-    document.getElementById('pageNext').disabled = adminCurrentPage >= totalPages;
+    const pageInfo = document.getElementById('pageInfo');
+    if (pageInfo) pageInfo.textContent = `Страница ${adminCurrentPage} из ${totalPages}`;
+    
+    const pagePrev = document.getElementById('pagePrev');
+    const pageNext = document.getElementById('pageNext');
+    if (pagePrev) pagePrev.disabled = adminCurrentPage <= 1;
+    if (pageNext) pageNext.disabled = adminCurrentPage >= totalPages;
 
     const tbody = document.getElementById('adminTableBody');
+    if (!tbody) return;
+
     if (pageApps.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="empty-message">Нет заявок для отображения</td></tr>';
         return;
@@ -627,7 +684,7 @@ function renderAdminPanel() {
             if (app) {
                 app.status = newStatus;
                 setApps(apps);
-                showNotification('Статус обновлён', `Заявка №${appId} теперь "${newStatus}"`);
+                showNotification('Статус обновлён', `Заявка №${appId} теперь "${newStatus}"`, 2000);
                 renderAdminPanel();
             }
         });
@@ -635,30 +692,43 @@ function renderAdminPanel() {
 }
 
 // ---- Фильтры админа ----
-document.getElementById('adminStatusFilter').addEventListener('change', renderAdminPanel);
-document.getElementById('adminSearchFilter').addEventListener('input', renderAdminPanel);
-document.getElementById('adminResetFilter').addEventListener('click', function() {
-    document.getElementById('adminStatusFilter').value = 'all';
-    document.getElementById('adminSearchFilter').value = '';
-    adminCurrentPage = 1;
-    renderAdminPanel();
-});
+const adminStatusFilter = document.getElementById('adminStatusFilter');
+const adminSearchFilter = document.getElementById('adminSearchFilter');
+const adminResetFilter = document.getElementById('adminResetFilter');
+
+if (adminStatusFilter) adminStatusFilter.addEventListener('change', renderAdminPanel);
+if (adminSearchFilter) adminSearchFilter.addEventListener('input', renderAdminPanel);
+if (adminResetFilter) {
+    adminResetFilter.addEventListener('click', function() {
+        if (adminStatusFilter) adminStatusFilter.value = 'all';
+        if (adminSearchFilter) adminSearchFilter.value = '';
+        adminCurrentPage = 1;
+        renderAdminPanel();
+    });
+}
 
 // ---- Пагинация админа ----
-document.getElementById('pagePrev').addEventListener('click', function() {
-    if (adminCurrentPage > 1) {
-        adminCurrentPage--;
-        renderAdminPanel();
-    }
-});
+const pagePrev = document.getElementById('pagePrev');
+const pageNext = document.getElementById('pageNext');
 
-document.getElementById('pageNext').addEventListener('click', function() {
-    const totalPages = Math.ceil(adminFilteredApps.length / ITEMS_PER_PAGE);
-    if (adminCurrentPage < totalPages) {
-        adminCurrentPage++;
-        renderAdminPanel();
-    }
-});
+if (pagePrev) {
+    pagePrev.addEventListener('click', function() {
+        if (adminCurrentPage > 1) {
+            adminCurrentPage--;
+            renderAdminPanel();
+        }
+    });
+}
+
+if (pageNext) {
+    pageNext.addEventListener('click', function() {
+        const totalPages = Math.ceil(adminFilteredApps.length / ITEMS_PER_PAGE);
+        if (adminCurrentPage < totalPages) {
+            adminCurrentPage++;
+            renderAdminPanel();
+        }
+    });
+}
 
 // ---- Сортировка таблицы ----
 document.querySelectorAll('.admin-table th[data-sort]').forEach(th => {
@@ -686,50 +756,132 @@ document.querySelectorAll('.admin-table th[data-sort]').forEach(th => {
 });
 
 // ---- Закрытие уведомления ----
-document.getElementById('notifCloseBtn').addEventListener('click', hideNotification);
-document.getElementById('notificationModal').addEventListener('click', function(e) {
-    if (e.target === this) hideNotification();
-});
+const notifCloseBtn = document.getElementById('notifCloseBtn');
+if (notifCloseBtn) {
+    notifCloseBtn.addEventListener('click', function() {
+        hideNotification();
+    });
+}
+
+const notificationModal = document.getElementById('notificationModal');
+if (notificationModal) {
+    notificationModal.addEventListener('click', function(e) {
+        if (e.target === this) hideNotification();
+    });
+}
+
+// ============================================================
+// КРАСИВОЕ МОДАЛЬНОЕ ОКНО ПРИ КЛИКЕ НА ЛОГОТИП
+// ============================================================
+function showLogoModal() {
+    const modal = document.getElementById('notificationModal');
+    if (!modal) return;
+    
+    const icon = document.getElementById('notifIcon');
+    if (icon) {
+        icon.textContent = '🎓';
+        icon.style.fontSize = '4rem';
+        icon.style.display = 'block';
+        icon.style.marginBottom = '12px';
+    }
+    
+    document.getElementById('notifTitle').textContent = 'Учусь.РФ';
+    document.getElementById('notifTitle').style.color = '#007bff';
+    document.getElementById('notifTitle').style.fontSize = '28px';
+    
+    document.getElementById('notifMessage').textContent = 'Добро пожаловать на портал образования! Здесь вы найдёте курсы повышения квалификации, переподготовки и охраны труда.';
+    document.getElementById('notifMessage').style.fontSize = '16px';
+    document.getElementById('notifMessage').style.lineHeight = '1.6';
+    
+    modal.classList.add('show');
+    
+    if (notificationTimeoutId) {
+        clearTimeout(notificationTimeoutId);
+        notificationTimeoutId = null;
+    }
+    notificationTimeoutId = setTimeout(() => {
+        hideNotification();
+        const iconEl = document.getElementById('notifIcon');
+        if (iconEl) {
+            iconEl.style.fontSize = '';
+            iconEl.style.display = '';
+            iconEl.style.marginBottom = '';
+        }
+        document.getElementById('notifTitle').style.color = '';
+        document.getElementById('notifTitle').style.fontSize = '';
+        document.getElementById('notifMessage').style.fontSize = '';
+        document.getElementById('notifMessage').style.lineHeight = '';
+    }, 4000);
+}
 
 // ---- Клик по логотипу ----
-document.getElementById('logoLink').addEventListener('click', function(e) {
-    e.preventDefault();
-    const user = getCurrentUser();
-    if (user) {
-        if (user.login === 'Admin26') {
-            navigateTo('admin');
-            renderAdminPanel();
-        } else {
-            navigateTo('dashboard');
-            renderDashboard();
-        }
-    } else {
-        navigateTo('login');
+const logoLink = document.getElementById('logoLink');
+if (logoLink) {
+    logoLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        const user = getCurrentUser();
+        showLogoModal();
+        setTimeout(() => {
+            if (user) {
+                if (user.login === 'Admin26') {
+                    redirectTo('admin.html');
+                } else {
+                    redirectTo('dashboard.html');
+                }
+            } else {
+                redirectTo('index.html');
+            }
+        }, 2000);
+    });
+}
+
+// ---- Клик по логотипу в футере ----
+const footerLogo = document.querySelector('.footer-logo');
+if (footerLogo) {
+    footerLogo.addEventListener('click', function() {
+        const user = getCurrentUser();
+        showLogoModal();
+        setTimeout(() => {
+            if (user) {
+                if (user.login === 'Admin26') {
+                    redirectTo('admin.html');
+                } else {
+                    redirectTo('dashboard.html');
+                }
+            } else {
+                redirectTo('index.html');
+            }
+        }, 2000);
+    });
+}
+
+// ============================================================
+// ИНИЦИАЛИЗАЦИЯ
+// ============================================================
+
+// Инициализация демо-данных
+function initDemoData() {
+    if (getUsers().length === 0) {
+        setUsers([
+            { id: 1, login: 'user1', password: 'password123', fullname: 'Иванов Иван', phone: '+7 999 123-45-67', email: 'ivan@mail.ru' },
+            { id: 2, login: 'user2', password: 'password123', fullname: 'Петрова Анна', phone: '+7 999 234-56-78', email: 'anna@mail.ru' }
+        ]);
     }
-    showNotification('Учусь.РФ', 'Добро пожаловать на портал образования!');
-});
-
-document.querySelector('.footer-logo')?.addEventListener('click', function() {
-    document.getElementById('logoLink').click();
-});
-
-// ---- Проверка авторизации при загрузке ----
-function checkAuth() {
-    const user = getCurrentUser();
-    if (user) {
-        if (user.login === 'Admin26') {
-            navigateTo('admin');
-            renderAdminPanel();
-        } else {
-            navigateTo('dashboard');
-            renderDashboard();
-        }
-    } else {
-        navigateTo('login');
+    if (getApps().length === 0) {
+        setApps([
+            { id: 1, userId: 1, course: 'Повышение квалификации', date: '15.06.2026', payment: 'Предоплата по QR-коду', status: 'Новая', createdAt: '2026-06-10' },
+            { id: 2, userId: 1, course: 'Охрана труда', date: '01.07.2026', payment: 'Оплата картой МИР', status: 'Идет обучение', createdAt: '2026-06-12' },
+            { id: 3, userId: 2, course: 'Профессиональная переподготовка', date: '10.08.2026', payment: 'Постоплата в офисе', status: 'Обучение завершено', createdAt: '2026-06-01' }
+        ]);
+    }
+    if (getReviews().length === 0) {
+        setReviews([
+            { appId: 3, userId: 2, text: 'Отличный курс! Всё было понятно и структурировано.', rating: 5 }
+        ]);
     }
 }
 
-// ---- Инициализация ----
+// Запуск
 initDemoData();
 initSlider();
 checkAuth();
