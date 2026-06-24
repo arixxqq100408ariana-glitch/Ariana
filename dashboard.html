@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Учусь.РФ - Личный кабинет</title>
+    <link rel="stylesheet" href="style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <!-- Шапка -->
+        <header id="mainHeader">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="dashboard.html" class="logo-link" title="На главную">
+                        <img src="./img/XXL_height2.png" alt="Учусь.РФ" class="logo-img" />
+                    </a>
+                    <span>Учусь.РФ</span>
+                </div>
+                <nav id="mainNav">
+                    <a href="dashboard.html" class="nav-btn active">Кабинет</a>
+                    <a href="index.html" id="navLogout" class="nav-btn logout-btn">Выйти</a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Основной контент -->
+        <main>
+            <div class="page-container">
+                <div class="dashboard-header">
+                    <div>
+                        <h2>Личный кабинет</h2>
+                        <p class="user-greeting">Добро пожаловать, <span id="userName"></span>!</p>
+                    </div>
+                    <a href="application.html" class="btn-primary pulse-btn">Новая заявка</a>
+                </div>
+
+                <!-- Слайдер -->
+                <div class="slider-container">
+                    <div class="slider-wrapper" id="sliderWrapper">
+                        <div class="slide"><img src="./img/cursy.jpg" alt="Повышение квалификации" /></div>
+                        <div class="slide"><img src="./img/52.jpg" alt="Профессиональная переподготовка" /></div>
+                        <div class="slide"><img src="./img/course_1.jpg" alt="Охрана труда" /></div>
+                        <div class="slide"><img src="./img/1678694971_sa.jpg" alt="Дистанционное обучение" /></div>
+                    </div>
+                    <button class="slider-btn prev" id="sliderPrev">&#10094;</button>
+                    <button class="slider-btn next" id="sliderNext">&#10095;</button>
+                    <div class="slider-dots" id="sliderDots"></div>
+                    <div class="slider-badge">
+                        <span>Обучение онлайн</span>
+                    </div>
+                </div>
+
+                <!-- Информационный блок -->
+                <div class="info-block">
+                    <div class="info-text">
+                        <h3>Записи на онлайн курсы дистанционного обучения</h3>
+                        <p>Повышение квалификации, курс переподготовки, курс по охране труда</p>
+                    </div>
+                    <div class="info-icons">
+                        <span>500+ курсов</span>
+                        <span>10 000+ студентов</span>
+                        <span>4.8 рейтинг</span>
+                    </div>
+                </div>
+
+                <!-- Список заявок -->
+                <div class="applications-section">
+                    <h3>Мои заявки</h3>
+                    <div id="applicationsList" class="applications-list">
+                        <p class="empty-message">У вас пока нет заявок. Создайте новую!</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- ФУТЕР -->
+        <footer id="mainFooter">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <div class="footer-logo">
+                        <img src="./img/XXL_height2.png" alt="Учусь.РФ" class="footer-logo-img" />
+                        <span>Учусь.РФ</span>
+                    </div>
+                    <p class="footer-copy">© 2026 Учусь.РФ. Все права защищены.</p>
+                </div>
+                <div class="footer-center">
+                    <p class="footer-slogan">Образование, доступное каждому</p>
+                </div>
+                <div class="footer-right">
+                    <div class="social-icons">
+                        <a href="#" class="social-link" title="ВКонтакте" target="_blank">
+                            <img src="./img/soc1.png" alt="ВК" class="social-img" />
+                        </a>
+                        <a href="#" class="social-link" title="Одноклассники" target="_blank">
+                            <img src="./img/soc2.png" alt="ОК" class="social-img" />
+                        </a>
+                    </div>
+                    <p class="footer-email">info@uchus.ru</p>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Модальное окно для отзыва -->
+        <div id="reviewModal" class="modal">
+            <div class="modal-content">
+                <span class="modal-close">&times;</span>
+                <h3>Оставить отзыв</h3>
+                <p id="reviewApplicationInfo">Заявка №<span id="reviewAppId"></span> - <span id="reviewAppCourse"></span></p>
+                <div class="form-group">
+                    <label>Ваш отзыв</label>
+                    <textarea id="reviewText" rows="4" placeholder="Поделитесь впечатлениями о курсе..."></textarea>
+                    <span class="error-message" id="reviewError"></span>
+                </div>
+                <div class="form-group">
+                    <label>Оценка</label>
+                    <div class="rating-stars" id="ratingStars">
+                        <span class="star" data-value="1">&#9734;</span>
+                        <span class="star" data-value="2">&#9734;</span>
+                        <span class="star" data-value="3">&#9734;</span>
+                        <span class="star" data-value="4">&#9734;</span>
+                        <span class="star" data-value="5">&#9734;</span>
+                    </div>
+                    <span id="ratingValue">0</span>
+                </div>
+                <button id="submitReviewBtn" class="btn-primary btn-full">Отправить отзыв</button>
+            </div>
+        </div>
+
+        <!-- Модальное окно уведомления -->
+        <div id="notificationModal" class="modal">
+            <div class="modal-content notification-content">
+                <h3 id="notifTitle">Успешно!</h3>
+                <p id="notifMessage">Действие выполнено.</p>
+                <button id="notifCloseBtn" class="btn-primary">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

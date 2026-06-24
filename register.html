@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Учусь.РФ - Вход</title>
+    <title>Учусь.РФ - Регистрация</title>
     <link rel="stylesheet" href="style.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
 </head>
@@ -19,8 +19,8 @@
                     <span>Учусь.РФ</span>
                 </div>
                 <nav id="mainNav">
-                    <a href="index.html" class="nav-btn active">Вход</a>
-                    <a href="register.html" class="nav-btn">Регистрация</a>
+                    <a href="index.html" class="nav-btn">Вход</a>
+                    <a href="register.html" class="nav-btn active">Регистрация</a>
                 </nav>
             </div>
         </header>
@@ -29,27 +29,39 @@
         <main>
             <div class="page-container">
                 <div class="form-card">
-                    <h1>Вход</h1>
-                    <p class="subtitle">Войдите в свой аккаунт</p>
-                    <form id="loginForm" novalidate>
+                    <h1>Регистрация</h1>
+                    <p class="subtitle">Создайте аккаунт для доступа к курсам</p>
+                    <form id="registerForm" novalidate>
                         <div class="form-group">
                             <label>Логин</label>
-                            <input type="text" id="loginUsername" placeholder="Введите логин" required />
-                            <span class="error-message" id="loginUsernameError"></span>
+                            <input type="text" id="regLogin" placeholder="минимум 6 символов (латиница + цифры)" required />
+                            <span class="error-message" id="regLoginError"></span>
                         </div>
                         <div class="form-group">
                             <label>Пароль</label>
-                            <input type="password" id="loginPassword" placeholder="Введите пароль" required />
-                            <span class="error-message" id="loginPasswordError"></span>
+                            <input type="password" id="regPassword" placeholder="минимум 8 символов" required />
+                            <span class="error-message" id="regPasswordError"></span>
                         </div>
-                        <button type="submit" class="btn-primary btn-full">Войти</button>
+                        <div class="form-group">
+                            <label>ФИО</label>
+                            <input type="text" id="regFullname" placeholder="Иванов Иван Иванович" required />
+                            <span class="error-message" id="regFullnameError"></span>
+                        </div>
+                        <div class="form-group">
+                            <label>Телефон</label>
+                            <input type="tel" id="regPhone" placeholder="+7 (999) 123-45-67" required />
+                            <span class="error-message" id="regPhoneError"></span>
+                        </div>
+                        <div class="form-group">
+                            <label>E-mail</label>
+                            <input type="email" id="regEmail" placeholder="example@mail.ru" required />
+                            <span class="error-message" id="regEmailError"></span>
+                        </div>
+                        <button type="submit" class="btn-primary btn-full">Зарегистрироваться</button>
                     </form>
                     <div class="form-footer">
-                        <span>Еще не зарегистрированы?</span>
-                        <a href="register.html" class="link-btn">Регистрация</a>
-                    </div>
-                    <div class="admin-link">
-                        <a href="admin.html" class="link-btn">Вход для администратора</a>
+                        <span>Уже есть аккаунт?</span>
+                        <a href="index.html" class="link-btn">Войти</a>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Учусь.РФ - Панель администратора</title>
+    <link rel="stylesheet" href="style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <!-- Шапка -->
+        <header id="mainHeader">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="admin.html" class="logo-link" title="На главную">
+                        <img src="./img/XXL_height2.png" alt="Учусь.РФ" class="logo-img" />
+                    </a>
+                    <span>Учусь.РФ</span>
+                </div>
+                <nav id="mainNav">
+                    <a href="admin.html" class="nav-btn active">Админ</a>
+                    <a href="index.html" id="navLogout" class="nav-btn logout-btn">Выйти</a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Основной контент -->
+        <main>
+            <div class="page-container">
+                <div class="admin-header">
+                    <h2>Панель администратора</h2>
+                    <div class="admin-stats" id="adminStats">
+                        <span class="stat-badge">Всего: <strong id="statTotal">0</strong></span>
+                        <span class="stat-badge new">Новые: <strong id="statNew">0</strong></span>
+                        <span class="stat-badge active">В процессе: <strong id="statActive">0</strong></span>
+                        <span class="stat-badge completed">Завершено: <strong id="statCompleted">0</strong></span>
+                    </div>
+                </div>
+
+                <!-- Фильтры -->
+                <div class="admin-filters">
+                    <select id="adminStatusFilter">
+                        <option value="all">Все статусы</option>
+                        <option value="Новая">Новая</option>
+                        <option value="Идет обучение">Идет обучение</option>
+                        <option value="Обучение завершено">Обучение завершено</option>
+                    </select>
+                    <input type="text" id="adminSearchFilter" placeholder="Поиск по ФИО или курсу..." />
+                    <button id="adminResetFilter" class="btn-secondary btn-sm">Сброс</button>
+                </div>
+
+                <!-- Таблица заявок -->
+                <div class="admin-table-wrapper">
+                    <table class="admin-table" id="adminTable">
+                        <thead>
+                            <tr>
+                                <th data-sort="id">№</th>
+                                <th data-sort="user">Пользователь</th>
+                                <th data-sort="course">Курс</th>
+                                <th data-sort="date">Дата</th>
+                                <th data-sort="status">Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTableBody">
+                            <tr><td colspan="6" class="empty-message">Нет заявок для отображения</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Пагинация -->
+                <div class="pagination" id="adminPagination">
+                    <button id="pagePrev" class="btn-secondary btn-sm">&#10094;</button>
+                    <span id="pageInfo">Страница 1 из 1</span>
+                    <button id="pageNext" class="btn-secondary btn-sm">&#10095;</button>
+                </div>
+
+                <!-- Контакты и информация -->
+                <div class="footer-info">
+                    <div class="contact-block">
+                        <h4>Наше местонахождение</h4>
+                        <p>г. Москва, ул. Большая Ордынка, д. 15</p>
+                        <p>Телефон горячей линии: +7 (495) 123-45-67</p>
+                        <p class="contact-note">Если возникли вопросы или пожелания, позвоните нам. Ответим оперативно и подробно.</p>
+                    </div>
+                    <div class="payment-block">
+                        <h4>Варианты оплаты</h4>
+                        <ul>
+                            <li>Предоплата по QR-коду</li>
+                            <li>Оплата картой МИР</li>
+                            <li>Постоплата в офисе организации Учусь.РФ</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- ФУТЕР -->
+        <footer id="mainFooter">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <div class="footer-logo">
+                        <img src="./img/XXL_height2.png" alt="Учусь.РФ" class="footer-logo-img" />
+                        <span>Учусь.РФ</span>
+                    </div>
+                    <p class="footer-copy">© 2026 Учусь.РФ. Все права защищены.</p>
+                </div>
+                <div class="footer-center">
+                    <p class="footer-slogan">Образование, доступное каждому</p>
+                </div>
+                <div class="footer-right">
+                    <div class="social-icons">
+                        <a href="#" class="social-link" title="ВКонтакте" target="_blank">
+                            <img src="./img/soc1.png" alt="ВК" class="social-img" />
+                        </a>
+                        <a href="#" class="social-link" title="Одноклассники" target="_blank">
+                            <img src="./img/soc2.png" alt="ОК" class="social-img" />
+                        </a>
+                    </div>
+                    <p class="footer-email">info@uchus.ru</p>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Модальное окно уведомления -->
+        <div id="notificationModal" class="modal">
+            <div class="modal-content notification-content">
+                <h3 id="notifTitle">Успешно!</h3>
+                <p id="notifMessage">Действие выполнено.</p>
+                <button id="notifCloseBtn" class="btn-primary">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

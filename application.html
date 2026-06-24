@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Учусь.РФ - Вход</title>
+    <title>Учусь.РФ - Оформление заявки</title>
     <link rel="stylesheet" href="style.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
 </head>
@@ -13,14 +13,14 @@
         <header id="mainHeader">
             <div class="header-content">
                 <div class="logo">
-                    <a href="index.html" class="logo-link" title="На главную">
+                    <a href="dashboard.html" class="logo-link" title="На главную">
                         <img src="./img/XXL_height2.png" alt="Учусь.РФ" class="logo-img" />
                     </a>
                     <span>Учусь.РФ</span>
                 </div>
                 <nav id="mainNav">
-                    <a href="index.html" class="nav-btn active">Вход</a>
-                    <a href="register.html" class="nav-btn">Регистрация</a>
+                    <a href="dashboard.html" class="nav-btn">Кабинет</a>
+                    <a href="index.html" id="navLogout" class="nav-btn logout-btn">Выйти</a>
                 </nav>
             </div>
         </header>
@@ -29,28 +29,41 @@
         <main>
             <div class="page-container">
                 <div class="form-card">
-                    <h1>Вход</h1>
-                    <p class="subtitle">Войдите в свой аккаунт</p>
-                    <form id="loginForm" novalidate>
+                    <h2>Оформление заявки</h2>
+                    <p class="subtitle">Выберите курс и укажите детали</p>
+                    <form id="applicationForm" novalidate>
                         <div class="form-group">
-                            <label>Логин</label>
-                            <input type="text" id="loginUsername" placeholder="Введите логин" required />
-                            <span class="error-message" id="loginUsernameError"></span>
+                            <label>Вид курса</label>
+                            <select id="appCourse" required>
+                                <option value="">Выберите курс...</option>
+                                <option value="Повышение квалификации">Повышение квалификации</option>
+                                <option value="Профессиональная переподготовка">Профессиональная переподготовка</option>
+                                <option value="Охрана труда">Охрана труда</option>
+                                <option value="Пожарная безопасность">Пожарная безопасность</option>
+                                <option value="ГО и ЧС">ГО и ЧС</option>
+                            </select>
+                            <span class="error-message" id="appCourseError"></span>
                         </div>
                         <div class="form-group">
-                            <label>Пароль</label>
-                            <input type="password" id="loginPassword" placeholder="Введите пароль" required />
-                            <span class="error-message" id="loginPasswordError"></span>
+                            <label>Дата начала</label>
+                            <input type="text" id="appDate" placeholder="ДД.ММ.ГГГГ" required />
+                            <span class="error-message" id="appDateError"></span>
                         </div>
-                        <button type="submit" class="btn-primary btn-full">Войти</button>
+                        <div class="form-group">
+                            <label>Способ оплаты</label>
+                            <select id="appPayment" required>
+                                <option value="">Выберите способ...</option>
+                                <option value="Предоплата по QR-коду">Предоплата по QR-коду</option>
+                                <option value="Оплата картой МИР">Оплата картой МИР</option>
+                                <option value="Постоплата в офисе">Постоплата в офисе</option>
+                            </select>
+                            <span class="error-message" id="appPaymentError"></span>
+                        </div>
+                        <div class="form-actions">
+                            <a href="dashboard.html" class="btn-secondary">Отмена</a>
+                            <button type="submit" class="btn-primary">Отправить заявку</button>
+                        </div>
                     </form>
-                    <div class="form-footer">
-                        <span>Еще не зарегистрированы?</span>
-                        <a href="register.html" class="link-btn">Регистрация</a>
-                    </div>
-                    <div class="admin-link">
-                        <a href="admin.html" class="link-btn">Вход для администратора</a>
-                    </div>
                 </div>
             </div>
         </main>
