@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Учусь.РФ - портал обучения</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+ <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Шапка -->
+        <header id="mainHeader">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="#" id="logoLink" class="logo-link" title="На главную">
+                        <img src="./img/XXL_height2.png" alt="" class="logo-img" />
+                    </a>
+                    <span>Учусь.РФ</span>
+                </div>
+                <nav id="mainNav">
+                    <button id="navLogin" class="nav-btn active" data-page="login">Вход</button>
+                    <button id="navRegister" class="nav-btn" data-page="register">Регистрация</button>
+                    <button id="navDashboard" class="nav-btn" data-page="dashboard" style="display:none;">Кабинет</button>
+                    <button id="navAdmin" class="nav-btn" data-page="admin" style="display:none;">Админ</button>
+                    <button id="navLogout" class="nav-btn logout-btn" style="display:none;">
+                        <i class="fas fa-sign-out-alt"></i> Выйти
+                    </button>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Основной контент -->
+        <main id="mainContent">
+            <!-- СТРАНИЦА: Регистрация -->
+            <section id="page-register" class="page active">
+                <div class="page-container">
+                    <div class="form-card">
+                        <h1>Регистрация</h1>
+                        <p class="subtitle">Создайте аккаунт для доступа к курсам</p>
+                        <form id="registerForm" novalidate>
+                            <div class="form-group">
+                                <label><i class="fas fa-user"></i> Логин</label>
+                                <input type="text" id="regLogin" placeholder="минимум 6 символов (латиница + цифры)" required />
+                                <span class="error-message" id="regLoginError"></span>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-lock"></i> Пароль</label>
+                                <input type="password" id="regPassword" placeholder="минимум 8 символов" required />
+                                <span class="error-message" id="regPasswordError"></span>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-user-circle"></i> ФИО</label>
+                                <input type="text" id="regFullname" placeholder="Иванов Иван Иванович" required />
+                                <span class="error-message" id="regFullnameError"></span>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-phone"></i> Телефон</label>
+                                <input type="tel" id="regPhone" placeholder="+7 (999) 123-45-67" required />
+                                <span class="error-message" id="regPhoneError"></span>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-envelope"></i> E-mail</label>
+                                <input type="email" id="regEmail" placeholder="example@mail.ru" required />
+                                <span class="error-message" id="regEmailError"></span>
+                            </div>
+                            <button type="submit" class="btn-primary btn-full">
+                                <i class="fas fa-user-plus"></i> Зарегистрироваться
+                            </button>
+                        </form>
+                        <div class="form-footer">
+                            <span>Уже есть аккаунт?</span>
+                            <button class="link-btn" data-page="login">Войти</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- СТРАНИЦА: Авторизация -->
+            <section id="page-login" class="page">
+                <div class="page-container">
+                    <div class="form-card">
+                        <h1>Вход</h1>
+                        <p class="subtitle">Войдите в свой аккаунт</p>
+                        <form id="loginForm" novalidate>
+                            <div class="form-group">
+                                <label><i class="fas fa-user"></i> Логин</label>
+                                <input type="text" id="loginUsername" placeholder="Введите логин" required />
+                                <span class="error-message" id="loginUsernameError"></span>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-lock"></i> Пароль</label>
+                                <input type="password" id="loginPassword" placeholder="Введите пароль" required />
+                                <span class="error-message" id="loginPasswordError"></span>
+                            </div>
+                            <button type="submit" class="btn-primary btn-full">
+                                <i class="fas fa-sign-in-alt"></i> Войти
+                            </button>
+                        </form>
+                        <div class="form-footer">
+                            <span>Еще не зарегистрированы?</span>
+                            <button class="link-btn" data-page="register">Регистрация</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- СТРАНИЦА: Личный кабинет -->
+            <section id="page-dashboard" class="page">
+                <div class="page-container">
+                    <div class="dashboard-header">
+                        <div>
+                            <h2><i class="fas fa-user-circle"></i> Личный кабинет</h2>
+                            <p class="user-greeting">Добро пожаловать, <span id="userName"></span>!</p>
+                        </div>
+                        <button id="newApplicationBtn" class="btn-primary pulse-btn">
+                            <i class="fas fa-plus-circle"></i> Новая заявка
+                        </button>
+                    </div>
+
+                    <!-- Слайдер -->
+                    <div class="slider-container">
+                        <div class="slider-wrapper" id="sliderWrapper">
+                            <div class="slide"><img src="https://picsum.photos/seed/edu1/800/400" alt="Повышение квалификации" /></div>
+                            <div class="slide"><img src="https://picsum.photos/seed/edu2/800/400" alt="Профессиональная переподготовка" /></div>
+                            <div class="slide"><img src="https://picsum.photos/seed/edu3/800/400" alt="Охрана труда" /></div>
+                            <div class="slide"><img src="https://picsum.photos/seed/edu4/800/400" alt="Дистанционное обучение" /></div>
+                        </div>
+                        <button class="slider-btn prev" id="sliderPrev"><i class="fas fa-chevron-left"></i></button>
+                        <button class="slider-btn next" id="sliderNext"><i class="fas fa-chevron-right"></i></button>
+                        <div class="slider-dots" id="sliderDots"></div>
+                        <div class="slider-badge">
+                            <span><i class="fas fa-graduation-cap"></i> Обучение онлайн</span>
+                        </div>
+                    </div>
+
+                    <!-- Информационный блок -->
+                    <div class="info-block">
+                        <div class="info-text">
+                            <h3>Записи на онлайн курсы дистанционного обучения</h3>
+                            <p>Повышение квалификации, курс переподготовки, курс по охране труда</p>
+                        </div>
+                        <div class="info-icons">
+                            <span><i class="fas fa-certificate"></i> 500+ курсов</span>
+                            <span><i class="fas fa-users"></i> 10 000+ студентов</span>
+                            <span><i class="fas fa-star"></i> 4.8 рейтинг</span>
+                        </div>
+                    </div>
+
+                    <!-- Список заявок -->
+                    <div class="applications-section">
+                        <h3><i class="fas fa-list-ul"></i> Мои заявки</h3>
+                        <div id="applicationsList" class="applications-list">
+                            <p class="empty-message">У вас пока нет заявок. Создайте новую!</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- СТРАНИЦА: Оформление заявки -->
+            <section id="page-application" class="page">
+                <div class="page-container">
+                    <div class="form-card">
+                        <h2><i class="fas fa-file-signature"></i> Оформление заявки</h2>
+                        <p class="subtitle">Выберите курс и укажите детали</p>
+                        <form id="applicationForm" novalidate>
+                            <div class="form-group">
+                                <label><i class="fas fa-book-open"></i> Вид курса</label>
+                                <select id="appCourse" required>
+                                    <option value="">Выберите курс...</option>
+                                    <option value="Повышение квалификации">Повышение квалификации</option>
+                                    <option value="Профессиональная переподготовка">Профессиональная переподготовка</option>
+                                    <option value="Охрана труда">Охрана труда</option>
+                                    <option value="Пожарная безопасность">Пожарная безопасность</option>
+                                    <option value="ГО и ЧС">ГО и ЧС</option>
+                                </select>
+                                <span class="error-message" id="appCourseError"></span>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-calendar-day"></i> Дата начала</label>
+                                <input type="text" id="appDate" placeholder="ДД.ММ.ГГГГ" required />
+                                <span class="error-message" id="appDateError"></span>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-credit-card"></i> Способ оплаты</label>
+                                <select id="appPayment" required>
+                                    <option value="">Выберите способ...</option>
+                                    <option value="Предоплата по QR-коду">Предоплата по QR-коду</option>
+                                    <option value="Оплата картой МИР">Оплата картой МИР</option>
+                                    <option value="Постоплата в офисе">Постоплата в офисе</option>
+                                </select>
+                                <span class="error-message" id="appPaymentError"></span>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" id="appCancelBtn" class="btn-secondary">Отмена</button>
+                                <button type="submit" class="btn-primary">
+                                    <i class="fas fa-paper-plane"></i> Отправить заявку
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- СТРАНИЦА: Панель администратора -->
+            <section id="page-admin" class="page">
+                <div class="page-container">
+                    <div class="admin-header">
+                        <h2><i class="fas fa-shield-alt"></i> Панель администратора</h2>
+                        <div class="admin-stats" id="adminStats">
+                            <span class="stat-badge">Всего: <strong id="statTotal">0</strong></span>
+                            <span class="stat-badge new">Новые: <strong id="statNew">0</strong></span>
+                            <span class="stat-badge active">В процессе: <strong id="statActive">0</strong></span>
+                            <span class="stat-badge completed">Завершено: <strong id="statCompleted">0</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Фильтры -->
+                    <div class="admin-filters">
+                        <select id="adminStatusFilter">
+                            <option value="all">Все статусы</option>
+                            <option value="Новая">Новая</option>
+                            <option value="Идет обучение">Идет обучение</option>
+                            <option value="Обучение завершено">Обучение завершено</option>
+                        </select>
+                        <input type="text" id="adminSearchFilter" placeholder="Поиск по ФИО или курсу..." />
+                        <button id="adminResetFilter" class="btn-secondary btn-sm">
+                            <i class="fas fa-undo"></i> Сброс
+                        </button>
+                    </div>
+
+                    <!-- Таблица заявок -->
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" id="adminTable">
+                            <thead>
+                                <tr>
+                                    <th data-sort="id">№</th>
+                                    <th data-sort="user">Пользователь</th>
+                                    <th data-sort="course">Курс</th>
+                                    <th data-sort="date">Дата</th>
+                                    <th data-sort="status">Статус</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminTableBody">
+                                <tr><td colspan="6" class="empty-message">Нет заявок для отображения</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Пагинация -->
+                    <div class="pagination" id="adminPagination">
+                        <button id="pagePrev" class="btn-secondary btn-sm"><i class="fas fa-chevron-left"></i></button>
+                        <span id="pageInfo">Страница 1 из 1</span>
+                        <button id="pageNext" class="btn-secondary btn-sm"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+
+                    <!-- Контакты и информация -->
+                    <div class="footer-info">
+                        <div class="contact-block">
+                            <h4><i class="fas fa-map-marker-alt"></i> Наше местонахождение</h4>
+                            <p>г. Москва, ул. Большая Ордынка, д. 15</p>
+                            <p><i class="fas fa-phone"></i> Телефон горячей линии: +7 (495) 123-45-67</p>
+                            <p class="contact-note">Если возникли вопросы или пожелания, позвоните нам. Ответим оперативно и подробно.</p>
+                        </div>
+                        <div class="payment-block">
+                            <h4><i class="fas fa-credit-card"></i> Варианты оплаты</h4>
+                            <ul>
+                                <li><i class="fas fa-qrcode"></i> Предоплата по QR-коду</li>
+                                <li><i class="fas fa-credit-card"></i> Оплата картой МИР</li>
+                                <li><i class="fas fa-building"></i> Постоплата в офисе организации Учусь.РФ</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- ФУТЕР С СОЦСЕТЯМИ -->
+        <footer id="mainFooter">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <div class="footer-logo">
+                        <img src="./img/XXL_height2.png" alt="" class="footer-logo-img" />
+                        <span>Учусь.РФ</span>
+                    </div>
+                    <p class="footer-copy">© 2026 Учусь.РФ. Все права защищены.</p>
+                </div>
+                <div class="footer-center">
+                    <p class="footer-slogan">Образование, доступное каждому</p>
+                </div>
+                <div class="footer-right">
+                    <div class="social-icons">
+                        <a href="#" class="social-link" title="VK" target="_blank"><i class="fab fa-vk"></i></a>
+                        <a href="#" class="social-link" title="Telegram" target="_blank"><i class="fab fa-telegram-plane"></i></a>
+                        <a href="#" class="social-link" title="YouTube" target="_blank"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="social-link" title="WhatsApp" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                        <a href="#" class="social-link" title="Rutube" target="_blank"><i class="fas fa-video"></i></a>
+                    </div>
+                    <p class="footer-email"><i class="fas fa-envelope"></i> info@uchus.ru</p>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Модальное окно для отзыва -->
+        <div id="reviewModal" class="modal">
+            <div class="modal-content">
+                <span class="modal-close">&times;</span>
+                <h3><i class="fas fa-star"></i> Оставить отзыв</h3>
+                <p id="reviewApplicationInfo">Заявка №<span id="reviewAppId"></span> - <span id="reviewAppCourse"></span></p>
+                <div class="form-group">
+                    <label>Ваш отзыв</label>
+                    <textarea id="reviewText" rows="4" placeholder="Поделитесь впечатлениями о курсе..."></textarea>
+                    <span class="error-message" id="reviewError"></span>
+                </div>
+                <div class="form-group">
+                    <label>Оценка</label>
+                    <div class="rating-stars" id="ratingStars">
+                        <i class="far fa-star" data-value="1"></i>
+                        <i class="far fa-star" data-value="2"></i>
+                        <i class="far fa-star" data-value="3"></i>
+                        <i class="far fa-star" data-value="4"></i>
+                        <i class="far fa-star" data-value="5"></i>
+                    </div>
+                    <span id="ratingValue">0</span>
+                </div>
+                <button id="submitReviewBtn" class="btn-primary btn-full">
+                    <i class="fas fa-paper-plane"></i> Отправить отзыв
+                </button>
+            </div>
+        </div>
+
+        <!-- Модальное окно уведомления -->
+        <div id="notificationModal" class="modal">
+            <div class="modal-content notification-content">
+                <i class="fas fa-check-circle" id="notifIcon"></i>
+                <h3 id="notifTitle">Успешно!</h3>
+                <p id="notifMessage">Действие выполнено.</p>
+                <button id="notifCloseBtn" class="btn-primary">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
